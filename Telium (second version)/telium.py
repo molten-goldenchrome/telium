@@ -7,9 +7,19 @@ class Module:
         pass
 
     def loadModule(self):
-        global module
-        possibleMoves,roomInfo = station.getModuleInfo(module,station.map)
-        station.outputModule(module,roomInfo); station.outputMoves(possibleMoves)
+        possibleMoves,roomInfo = station.getModuleInfo(self.currentModule,station.map)
+        station.outputModule(self.currentModule,roomInfo); station.outputMoves(possibleMoves)
+        if self.currentModule == queen.queen:
+            print("The queen glares at you.")
+        else:
+            if self.currentModule in workers.workerList:
+                print("A worker alien glares at you.")
+            elif self.currentModule in panels.infoPanels:
+                print("There is an information panel in here. You could use it to scan for lifeforms.")
+            elif self.currentModule in vents.ventShafts:
+                print("There is a ventilation shaft in here. You feel its cool air blowing past you.")
+        
+            
 
     def getCurrentModule(self):
         return self.currentModule
@@ -55,7 +65,7 @@ class InfoPanel:
     infoPanels = []
 
 class Worker:
-    workers = []
+    workerList = []
 
 class Scanner:
     pass
@@ -68,9 +78,10 @@ class Station:
     power = 100
     fuel = 500
     locked = 0
+    numModules = 0
+    gameMap = ""
     def __init__(self,map):
         #loads the nuumber of modules, the map
-        global numModules, gameMap
         count = 1
         done = False
         while done == False:
@@ -80,9 +91,9 @@ class Station:
                 temp.close()
             except FileNotFoundError:
                 done = True
-        numModules = count
+        self.numModules = count
         gameMapTemp = open(f"resources/{map}/map.txt","r")
-        gameMap = gameMapTemp.read()
+        self.gameMap = gameMapTemp.read()
         gameMapTemp.close()
 
     def getModuleInfo(self,module,map):
@@ -106,6 +117,24 @@ class Station:
         for move in possibleMoves:
             print(move,'| ',end='')
         print()
+
+    def spawnNPCs(self):
+        localNumModules = self.numModules
+        moduleSet = []
+        for counter in range(2,localNumModules+1):
+            moduleSet.append(counter)
+        random.shuffle(moduleSet)
+        i = 0
+        queen.queen = moduleSet[i]
+        for counter in range(0,3):
+            i += 1
+            vents.ventShafts.append(moduleSet[i])
+        for counter in range(0,2):
+            i +=1
+            panels.infoPanels.append(moduleSet[i])
+        for counter in range(0,3):
+            i+=1
+            workers.workerList.append(moduleSet[i])
 
 def textParser(command):
     global power, module, infoPanels
@@ -172,10 +201,13 @@ player = Player()
 panels = InfoPanel()
 queen = Telium()
 
+station.spawnNPCs() 
+
 while player.alive and not player.won:
     module.loadModule()
     if player.won == False and player.alive == True:
         player.getAction()
+        station.power -= 1
 
 if player.won:
     print("The queen is trapped! You burn it to death with your flamethrower.")
