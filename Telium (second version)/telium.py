@@ -18,8 +18,25 @@ class Module:
                 print("There is an information panel in here. You could use it to scan for lifeforms.")
             elif self.currentModule in vents.ventShafts:
                 print("There is a ventilation shaft in here. You feel its cool air blowing past you.")
-        
-            
+                time.sleep(3)
+                print("There is also a bank of fuel cells in here. You load a cell into your flamethrower.")
+                fuelGained = random.randint(2,5)*10
+                print(f"Fuel was {station.fuel}, now reading {station.fuel+fuelGained}.")
+                station.fuel = station.fuel + fuelGained
+                time.sleep(2)
+                print("The doors suddenly lock shut!")
+                time.sleep(1)
+                print("What is happening to the station?!")
+                time.sleep(0.5)
+                print("Our only escape is to climb into the ventilation shaft.")
+                time.sleep(0.25)
+                print("Where do we go?!")
+                time.sleep(0.25)
+                print("We follow the passage and find ourselves sliding down.")
+                self.lastModule = self.currentModule
+                while self.currentModule in vents.ventShafts:
+                    self.currentModule = random.randint(1,station.numModules)
+                self.loadModule()
 
     def getCurrentModule(self):
         return self.currentModule
