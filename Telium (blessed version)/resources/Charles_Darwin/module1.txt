@@ -1,0 +1,5 @@
+2
+8
+9
+10
+The comms module. Everything here got fried by - well, whatever it was.
