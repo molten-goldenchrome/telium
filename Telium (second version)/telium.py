@@ -148,6 +148,21 @@ def textParser(command):
     else:
         return (False,False)
 
+def mainMenu():
+    print("Welcome to Telium!")
+    validAction = False
+    while not validAction:
+        print("1. Play\n2. Instructions\n3. Quit (1,2,3)")
+        action = input(">>>")
+        if action == "1":
+            validAction = True
+        elif action == "2":
+            print("Please see 'instructions.md' in the same folder as this python file")
+        elif action == "3":
+            sys.exit()
+        else:
+            print("Not a valid option. Please enter as an integer on its own, e.g. '1' to play the game.")
+
 module = Module()
 station = Station(map="Charles_Darwin") #change this so custom ones can be made
 scanner = Scanner()
