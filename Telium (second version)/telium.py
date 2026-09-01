@@ -30,13 +30,23 @@ class Player:
 
     def getAction(self):
         localModule = module.getCurrentModule()
-        localLastModule = module.getLastModule()
         localPossibleMoves = module.getPossibleMoves()
         validAction = False
         while validAction == False:
             print("What do you want to do next? (MOVE, SCANNER)")
             action = input(">>>")
-            result = textParser(action)
+            result,detail = textParser(action)
+            if result == 'move' and detail in localPossibleMoves:
+                validAction = True; module.lastModule = localModule; module.currentModule = detail
+            elif result == 'move' and detail == None:
+                try:
+                    newModule = int(input("Which module would you like to go to?\n>"))
+                    if newModule in localPossibleMoves:
+                        validAction = True; module.lastModule = localModule; module.currentModule = newModule
+                except TypeError:
+                    print("You must type an integer with nothing around it, e.g. '6'.")
+            
+
 
 class Telium:
     queen = 0
@@ -107,6 +117,8 @@ def textParser(command):
     if 'move' in command or ('m' in command and 'map' not in command):
         action = 'move'
         command = command.strip("move")
+        if command == '':
+            return(action,None)
         try:
             detail = int(command)
             return (action,detail)
@@ -136,11 +148,6 @@ def textParser(command):
     else:
         return (False,False)
 
-
-
-
-
-
 module = Module()
 station = Station(map="Charles_Darwin") #change this so custom ones can be made
 scanner = Scanner()
@@ -149,3 +156,16 @@ workers = Worker()
 player = Player()
 panels = InfoPanel()
 queen = Telium()
+
+while player.alive and not player.won:
+    module.loadModule()
+    if player.won == False and player.alive == True:
+        player.getAction()
+
+if player.won:
+    print("The queen is trapped! You burn it to death with your flamethrower.")
+    print("Game over! You win!")
+
+if not player.alive:
+    print("The station has run out of power. Unable to sustain life support, you die.")
+    print("Game over! You lose!")
