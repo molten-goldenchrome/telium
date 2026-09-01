@@ -1,0 +1,5 @@
+1
+11
+12
+0
+The backup comms module. It doesn't matter that it's a backup - it's still all fried.
