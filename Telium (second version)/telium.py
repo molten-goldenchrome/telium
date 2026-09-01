@@ -38,6 +38,40 @@ class Module:
                     self.currentModule = random.randint(1,station.numModules)
                 self.loadModule()
 
+    def lockModule(self):
+        localNumModules = station.numModules
+        try:
+            toLock = int(input("Enter module to lock:\n>>>"))
+            if toLock < 0 or toLock > localNumModules:
+                print("Invlaid module - operation failed.")
+            elif toLock == queen.queen:
+                print("Operation failed. Unable to lock module.")
+            elif toLock == station.locked:
+                print("Operation failed. Module is already locked!")
+            else:
+                station.locked = toLock
+                print(f"Aliens cannot enter module {toLock}.")
+                powerUsed = 25 + 1*random.randint(0,10)
+                station.power -= powerUsed
+        except TypeError:
+            print("Incorrectly entered module! Must be an integer on its own, e.g. '6'.")
+
+    def lockKnownModule(self,toLock):
+        localNumModules = station.numModules
+        try:
+            if toLock < 0 or toLock > localNumModules:
+                print("Invlaid module - operation failed.")
+            elif toLock == queen.queen:
+                print("Operation failed. Unable to lock module.")
+            else:
+                station.locked = toLock
+                print(f"Aliens cannot enter module {toLock}.")
+                powerUsed = 25 + 1*random.randint(0,10)
+                station.power -= powerUsed
+        except TypeError:
+            print("Incorrectly entered module! Must be an integer on its own, e.g. '6'.")
+
+
     def getCurrentModule(self):
         return self.currentModule
 
@@ -72,8 +106,12 @@ class Player:
                         validAction = True; module.lastModule = localModule; module.currentModule = newModule
                 except TypeError:
                     print("You must type an integer with nothing around it, e.g. '6'.")
-            
-
+            elif result == "scanner":
+                validAction = True
+                scanner.scannerCalled()
+            elif result == "lock":
+                validAction = True
+                module.lockKnownModule(detail)
 
 class Telium:
     queen = 0
@@ -85,7 +123,31 @@ class Worker:
     workerList = []
 
 class Scanner:
-    pass
+    def __init__(self):
+        pass
+
+    def scannerCalled(self):
+        print("SYSTEMATIC CAPTURE AND NETWORK NAVIGATION EGINE FOR RETRIEVAL (v6.1.12)")
+        print("loading...")
+        time.sleep(3)
+        print("SCANNER READY. ENTER COMMAND: (LOCK, POWER)")
+        command = input(">>>")
+        if command.lower() == "lock":
+            module.lockModule()
+        elif command.lower() == 'power':
+            print("FETCHING DATA...")
+            time.sleep(1.5)
+            print(f"STATION POWER READING AT {station.power}%")
+        elif command.lower() == 'fuel':
+            print("FETCHING DATA...")
+            time.sleep(1.5)
+            print(f"FUEL READING AT {station.fuel}.")
+        elif command.lower() == 'lifeforms':
+            print("FETCHING DATA...")
+            time.sleep(1.5)
+            print(f"{len(workers.workerList)+1} ALIEN LIFEFORMS DETECTED ONBOARD")
+        else:
+            print("UNKNOWN OR INCORRECT COMMAND. PLEASE REFER TO DOCUMENTATION.")
 
 class Vent:
     ventShafts = []
