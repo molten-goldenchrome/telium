@@ -1,4 +1,7 @@
-import time; import sys; import random
+import time; import sys; import random; import threading; from threading import Event
+
+threadDict = {}
+
 
 class Module:
     currentModule = 1
@@ -9,11 +12,14 @@ class Module:
     def loadModule(self):
         possibleMoves,roomInfo = station.getModuleInfo(self.currentModule,station.map)
         station.outputModule(self.currentModule,roomInfo); station.outputMoves(possibleMoves)
+        if station.fuel <= 100:
+            print("LOW FUEL!")
         if self.currentModule == queen.queen:
-            print("The queen glares at you.")
+            print("The queen glares at you...")
+            queen.moveQueen()
         else:
             if self.currentModule in workers.workerList:
-                print("A worker alien glares at you.")
+                print("A worker alien glares at you...")
             elif self.currentModule in panels.infoPanels:
                 print("There is an information panel in here. You could use it to scan for lifeforms.")
             elif self.currentModule in vents.ventShafts:
@@ -37,6 +43,7 @@ class Module:
                 while self.currentModule in vents.ventShafts:
                     self.currentModule = random.randint(1,station.numModules)
                 self.loadModule()
+            queen.moveQueen()
 
     def lockModule(self):
         localNumModules = station.numModules
@@ -86,6 +93,7 @@ class Module:
 class Player:
     alive = True
     won = False
+    hp = 100
     def __init__(self):
         pass
 
@@ -115,6 +123,119 @@ class Player:
 
 class Telium:
     queen = 0
+    hp = 100
+    def __init__(self):
+        pass
+
+    def moveQueen(self):
+        localModule = module.getCurrentModule()
+        localLastModule = module.getLastModule()
+        localLocked = station.locked
+        localQueen = self.queen
+        if localModule == localQueen:
+            movesToMake = random.randint(1,3)
+            canMoveToLastModule = False
+            while movesToMake > 0:
+                escapes,ignore = station.getModuleInfo(queen.queen,station.map)
+                if localModule in escapes:
+                    escapes.remove(localModule)
+                if localLastModule in escapes and canMoveToLastModule == False:
+                    escapes.remove(localLastModule)
+                if localLocked in escapes:
+                    escapes.remove(localLocked)
+                if len(escapes) == 0:
+                    player.won = True
+                    movesToMake = 0
+                    print("...and the door is locked. It's trapped.")
+                    self.finalBattle()
+                else:
+                    if movesToMake == 1:
+                        print("...and has escaped.")
+                    self.queen = random.choice(escapes)
+                    movesToMake = movesToMake -1
+                    canMoveToLastModule = True
+                    while queen.queen in vents.ventShafts:
+                        if movesToMake > 1:
+                            print("...and has escaped.")
+                        print("We can hear scuttling in the vent shafts.")
+                        validMove = False
+                        while not validMove:
+                            queen.queen = random.randint(1,station.numModules)
+                            if queen.queen not in vents.ventShafts:
+                                validMove = True
+                        movesToMake = 0
+
+    def finalBattle(self):
+        time.sleep(2)
+        print("The queen glares at you with her sparkling, ruby eyes.")
+        time.sleep(0.5)
+        print("You glare back.")
+        time.sleep(2)
+        print("You charge up your flamethrower!")
+        threadDict["QTEtracker"] = threading.Thread(target=self.quickTimeEventStarter)
+
+    def quickTimeEventStarter(self):
+        global threadDict
+        while queen.hp > 0 and station.fuel > 0 and player.hp > 0:
+            eventTypes = ["swipe","flamethrowerJam","debris","stunChancePlayer","stunChanceQueen"]
+            event = random.choice(eventTypes)
+            while not threading.active_count() == 1:
+                time.sleep(random.randint(10,20))
+                self.hp -= 10; station.fuel -= 10
+            if event == "swipe":
+                threadDict["swipe"] = threading.Thread(target=self.swipeEvent)
+                threadDict["timeTracker"] = threading.Thread(target=self.quickTimeEventTracker,args=(time.time(),random.uniform(0.5,1.5)))
+                threadDict["completedEvent"] = Event()
+                threadDict["killEvent"] = Event()
+                threadDict["swipe"].start(); threadDict["timeTracker"].start()
+                threadDict["swipe"].join(); threadDict["timeTracker"].join()
+                if threadDict["completedEvent"].is_set() and not threadDict["killEvent"].is_set():
+                    print("Good dodge! Just in time.")
+                elif threadDict["completedEvent"].is_set() and threadDict["killEvent"].is_set():
+                    print("You try to jump out the way, but the queen hits you with a glancing blow.")
+                else:
+                    print("The queen hits you with a solid blow to the chest. That hurt!")
+            elif event == "flamethrowerJam":
+                threadDict["flamethrowerJam"] = threading.Thread(target=self.flamethrowerJamEvent)
+                threadDict["timeTracker"] = threading.Thread(target=self.quickTimeEventTracker,args=(time.time(),random.uniform(0.5,1.5)))
+                threadDict["completedEvent"] = Event()
+                threadDict["killEvent"] = Event()
+                threadDict["flamethrowerJam"].start(); threadDict["timeTracker"].start()
+                threadDict["flamethrowerJam"].join(); threadDict["timeTracker"].join()
+            elif event == 
+        
+
+    def quickTimeEventTracker(self,startTime,allowedTime):
+        global threadDict
+        timeMustFinish = startTime+allowedTime
+        while time.time < timeMustFinish and not threadDict["completedEvent"].is_set():
+            pass
+        if time.time > timeMustFinish:
+            threadDict["killEvent"].set()
+        else:
+            pass
+
+    def swipeEvent(self):
+        global threadDict
+        while not threadDict["killEvent"].is_set:
+            print("THE QUEEN SWIPES AT YOU! ENTER TO DODGE!")
+            input()
+            threadDict["completedEvent"].set()
+            break
+
+    def flamethrowerJamEvent(self):
+        global threadDict
+        while not threadDict["killEvent"].is_set():
+            alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+            strToFix = ''
+            for i in range(4):
+                strToFix = strToFix+random.choice(alphabet)
+            print("Your flamethrower got jammed! Type",strToFix,"to repair it!")
+            entered = input(">>>")
+            if entered.lower() == strToFix.lower():
+                threadDict["completedEvent"].set()
+                break
+
 
 class InfoPanel:
     infoPanels = []
