@@ -450,3 +450,5 @@ elif not player.alive:
     print("The station has run out of power. Unable to sustain life support, you die.")
     print("Game over! You lose!")
 
+time.sleep(5)
+sys.exit()
