@@ -177,7 +177,7 @@ class Telium:
     def quickTimeEventStarter(self):
         global threadDict
         while queen.hp > 0 and station.fuel > 0 and player.hp > 0:
-            eventTypes = ["swipe","flamethrowerJam","debris","stunChancePlayer","stunChanceQueen"]
+            eventTypes = ["swipe","flamethrowerJam","debris"]
             event = random.choice(eventTypes)
             while not threading.active_count() == 1:
                 time.sleep(random.randint(10,20))
@@ -193,17 +193,40 @@ class Telium:
                     print("Good dodge! Just in time.")
                 elif threadDict["completedEvent"].is_set() and threadDict["killEvent"].is_set():
                     print("You try to jump out the way, but the queen hits you with a glancing blow.")
+                    player.hp -= 10
                 else:
                     print("The queen hits you with a solid blow to the chest. That hurt!")
+                    player.hp -= 25
             elif event == "flamethrowerJam":
                 threadDict["flamethrowerJam"] = threading.Thread(target=self.flamethrowerJamEvent)
-                threadDict["timeTracker"] = threading.Thread(target=self.quickTimeEventTracker,args=(time.time(),random.uniform(0.5,1.5)))
+                threadDict["timeTracker"] = threading.Thread(target=self.quickTimeEventTracker,args=(time.time(),20))
                 threadDict["completedEvent"] = Event()
                 threadDict["killEvent"] = Event()
                 threadDict["flamethrowerJam"].start(); threadDict["timeTracker"].start()
                 threadDict["flamethrowerJam"].join(); threadDict["timeTracker"].join()
-            elif event == 
-        
+                print("You bash it a couple of times and it starts working again. Better finish this fast.")
+            elif event == "debris":
+                print("The queen stops trying to attack you.")
+                time.sleep(2)
+                print("Instead, she rips a piece of metal off the walls. Be ready - she's going to throw it at you fast.")
+                threadDict["debris"] = threading.Thread(target=self.debrisEvent)
+                threadDict["timeTracker"] = threading.Thread(target=self.quickTimeEventTracker,args=(time.time(),random.uniform(0.25,0.5)))
+                threadDict["completedEvent"] = Event()
+                threadDict["killEvent"] = Event()
+                threadDict["debris"].start(); threadDict["timeTracker"].start()
+                threadDict["debris"].join(); threadDict["timeTracker"].join()
+                if threadDict["completedEvent"].is_set() and not threadDict["killEvent"].is_set():
+                    print("Good dodge! Just in time.")
+                elif threadDict["completedEvent"].is_set() and threadDict["killEvent"].is_set():
+                    print("You try to jump out the way, but the queen hits you with a glancing blow.")
+                    player.hp -= 10
+                else:
+                    print("The queen hits you with a solid blow to the chest. That hurt!")
+                    player.hp -= 25
+        if queen.hp <= 0:
+            player.won = True
+        if player.hp <= 0:
+            player.alive = False
 
     def quickTimeEventTracker(self,startTime,allowedTime):
         global threadDict
@@ -236,6 +259,12 @@ class Telium:
                 threadDict["completedEvent"].set()
                 break
 
+    def debrisEvent(self):
+        global threadDict
+        while not threadDict["killEvent"].is_set():
+            input("DODGE NOW!")
+            threadDict["completedEvent"].set()
+            break
 
 class InfoPanel:
     infoPanels = []
@@ -413,6 +442,11 @@ if player.won:
     print("The queen is trapped! You burn it to death with your flamethrower.")
     print("Game over! You win!")
 
-if not player.alive:
+if not player.alive and player.hp <= 0:
+    print("The queen looks over you disdainfully. Finally, she attacks with one last swipe and - ")
+    time.sleep(0.25)
+
+elif not player.alive:
     print("The station has run out of power. Unable to sustain life support, you die.")
     print("Game over! You lose!")
+
