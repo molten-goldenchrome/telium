@@ -332,23 +332,27 @@ class Scanner:
             time.sleep(1.5)
             print(f"{len(workers.workerList)+1} ALIEN LIFEFORMS DETECTED ONBOARD")
         elif command.lower() == 'scan':
-            toScan = input("ENTER MODULE TO SCAN:\n>>>")
-            moves = station.getModuleInfo(int(toScan),str(station.map))[0]
-            time.sleep(2)
-            print("FETCHING DATA...")
-            if toScan in moves:
-                if int(toScan) == queen.queen:
-                    print(f"QUEEN DETECTED IN MODULE {toScan}.")
-                elif int(toScan) in workers.workerList:
-                    print(f"WORKER ALIEN DETECTED IN MODULE {toScan}.")
-                elif int(toScan) in vents.ventShafts:
-                    print(f"VENTILATION SHAFT DETECTED IN MODULE {toScan}.")
-                elif int(toScan) in panels.infoPanels:
-                    print(f"INFORMATION PANEL DETECTED IN MODULE {toScan}.")
+            try:
+                toScan = input("ENTER MODULE TO SCAN:\n>>>")
+                toScan = int(toScan)
+                moves = station.getModuleInfo(int(toScan),str(station.map))[0]
+                time.sleep(2)
+                print("FETCHING DATA...")
+                if toScan in moves:
+                    if int(toScan) == queen.queen:
+                        print(f"QUEEN DETECTED IN MODULE {toScan}.")
+                    elif int(toScan) in workers.workerList:
+                        print(f"WORKER ALIEN DETECTED IN MODULE {toScan}.")
+                    elif int(toScan) in vents.ventShafts:
+                        print(f"VENTILATION SHAFT DETECTED IN MODULE {toScan}.")
+                    elif int(toScan) in panels.infoPanels:
+                        print(f"INFORMATION PANEL DETECTED IN MODULE {toScan}.")
+                    else:
+                        print(f"NO LIFEFORMS DETECTED IN MODULE {toScan}.")
                 else:
-                    print(f"NO LIFEFORMS DETECTED IN MODULE {toScan}.")
-            else:
-                print("MODULE MUST BE CONNECTED TO CURRENT MODULE. SCAN FAILED.")
+                    print("MODULE MUST BE CONNECTED TO CURRENT MODULE. SCAN FAILED.")
+            except TypeError:
+                print("INCORRECTLY ENTERED MODULE! MUST BE AN INTEGER ON ITS OWN, E.G. '6'.")
         else:
             print("UNKNOWN OR INCORRECT COMMAND. PLEASE REFER TO DOCUMENTATION.")
 
