@@ -335,7 +335,7 @@ class Scanner:
             try:
                 toScan = input("ENTER MODULE TO SCAN:\n>>>")
                 toScan = int(toScan)
-                moves = station.getModuleInfo(int(toScan),str(station.map))[0]
+                moves = station.getModuleInfo(int(module.currentModule),str(station.map))[0]
                 time.sleep(2)
                 print("FETCHING DATA...")
                 if toScan in moves:
@@ -372,20 +372,20 @@ class Station:
         done = False
         while done == False:
             try:
-                temp = open(f"Telium (second version)/resources/{map}/module{str(count)}.txt",mode="r")
+                temp = open(f"resources/{map}/module{str(count)}.txt",mode="r")
                 count += 1
                 temp.close()
             except FileNotFoundError:
                 done = True
         self.numModules = count
-        gameMapTemp = open(f"Telium (second version)/resources/{map}/map.txt","r")
+        gameMapTemp = open(f"resources/{map}/map.txt","r")
         self.gameMap = gameMapTemp.read()
         gameMapTemp.close()
 
     def getModuleInfo(self,localModule,map):
         #retrieves information about a specific module
         moves = []
-        temp = open(f"Telium (second version)/resources/{map}/module{str(localModule)}.txt","r")
+        temp = open(f"resources/{map}/module{str(localModule)}.txt","r")
         for i in range(0,4):
             moveRead = temp.readline()
             moveRead = int(moveRead.strip())
