@@ -21,7 +21,7 @@ class Module:
             if self.currentModule in workers.workerList:
                 print("A worker alien glares at you...")
             elif self.currentModule in panels.infoPanels:
-                print("There is an information panel in here. You could use it to scan for lifeforms.")
+                print("There is an information panel in here. You could use it to scan for the location of the queen. (PANEL)")
             elif self.currentModule in vents.ventShafts:
                 print("There is a ventilation shaft in here. You feel its cool air blowing past you.")
                 time.sleep(3)
@@ -102,7 +102,7 @@ class Player:
         localPossibleMoves = module.getPossibleMoves()
         validAction = False
         while validAction == False:
-            print("What do you want to do next? (MOVE, SCANNER)")
+            print("What do you want to do next? (MOVE, SCANNER, MAP, LOCK)")
             action = input(">>>")
             result,detail = textParser(action)
             if result == 'move' and detail in localPossibleMoves:
@@ -120,7 +120,42 @@ class Player:
             elif result == "lock":
                 validAction = True
                 module.lockKnownModule(detail)
-
+            elif result == "panel" and detail == "allowed":
+                validAction = True
+                print("InfoPanel (v1.3) - INITIALISING...")
+                time.sleep(2)
+                print(f"The queen is currently in module {queen.queen}.")
+            elif result == "panel" and detail == "not allowed":
+                validAction = False
+                print("You cannot use the information panel. Either the station doesn't have enough power or there is no information panel in this module.")
+            elif result == "map":
+                validAction = True
+                print(station.gameMap)
+    def intuition(self):
+        moves = module.getPossibleMoves()
+        workersNum = 0
+        ventsNum = 0
+        panelsNum = 0
+        for connectedModule in moves:
+            if connectedModule == queen.queen:
+                print("SHH! Did you hear that?")
+            elif connectedModule in workers.workerList:
+                workersNum += 1
+            elif connectedModule in vents.ventShafts:
+                ventsNum += 1
+            elif connectedModule in panels.infoPanels:
+                panelsNum += 1
+        if workersNum == 1:
+            print("You hear a scuttling sound nearby.")
+        elif workersNum > 1:
+            print("You hear scuttling sounds nearby.")
+        if ventsNum == 1:
+            print("You feel a cool breeze nearby.")
+        elif ventsNum > 1:
+            print("You feel cool breezes through more than one door nearby.")
+        if panelsNum >= 1:
+            print("There's an information panel nearby. You could use it to scan for lifeforms.")
+        
 class Telium:
     queen = 0
     hp = 100
@@ -231,16 +266,16 @@ class Telium:
     def quickTimeEventTracker(self,startTime,allowedTime):
         global threadDict
         timeMustFinish = startTime+allowedTime
-        while time.time < timeMustFinish and not threadDict["completedEvent"].is_set():
+        while time.time() < timeMustFinish and not threadDict["completedEvent"].is_set():
             pass
-        if time.time > timeMustFinish:
+        if time.time()  > timeMustFinish:
             threadDict["killEvent"].set()
         else:
             pass
 
     def swipeEvent(self):
         global threadDict
-        while not threadDict["killEvent"].is_set:
+        while not threadDict["killEvent"].is_set():
             print("THE QUEEN SWIPES AT YOU! ENTER TO DODGE!")
             input()
             threadDict["completedEvent"].set()
@@ -280,7 +315,7 @@ class Scanner:
         print("SYSTEMATIC CAPTURE AND NETWORK NAVIGATION ENGINE FOR RETRIEVAL (v6.1.12)")
         print("loading...")
         time.sleep(3)
-        print("SCANNER READY. ENTER COMMAND: (LOCK, POWER)")
+        print("SCANNER READY. ENTER COMMAND: (LOCK, POWER, FUEL, LIFEFORMS, SCAN)")
         command = input(">>>")
         if command.lower() == "lock":
             module.lockModule()
@@ -296,6 +331,24 @@ class Scanner:
             print("FETCHING DATA...")
             time.sleep(1.5)
             print(f"{len(workers.workerList)+1} ALIEN LIFEFORMS DETECTED ONBOARD")
+        elif command.lower() == 'scan':
+            toScan = input("ENTER MODULE TO SCAN:\n>>>")
+            moves = station.getModuleInfo(int(toScan),str(station.map))[0]
+            time.sleep(2)
+            print("FETCHING DATA...")
+            if toScan in moves:
+                if int(toScan) == queen.queen:
+                    print(f"QUEEN DETECTED IN MODULE {toScan}.")
+                elif int(toScan) in workers.workerList:
+                    print(f"WORKER ALIEN DETECTED IN MODULE {toScan}.")
+                elif int(toScan) in vents.ventShafts:
+                    print(f"VENTILATION SHAFT DETECTED IN MODULE {toScan}.")
+                elif int(toScan) in panels.infoPanels:
+                    print(f"INFORMATION PANEL DETECTED IN MODULE {toScan}.")
+                else:
+                    print(f"NO LIFEFORMS DETECTED IN MODULE {toScan}.")
+            else:
+                print("MODULE MUST BE CONNECTED TO CURRENT MODULE. SCAN FAILED.")
         else:
             print("UNKNOWN OR INCORRECT COMMAND. PLEASE REFER TO DOCUMENTATION.")
 
@@ -340,6 +393,7 @@ class Station:
 
     def outputModule(self,module,roomInfo):
         print(f"\n-------------------------------------------------\nYou are in module {module}.\n{roomInfo}")
+        player.intuition()
 
     def outputMoves(self,possibleMoves):
         print(f"From here, you can move to modules: | ",end='')
