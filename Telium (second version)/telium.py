@@ -1,4 +1,4 @@
-import time; import sys; import random; import threading; from threading import Event
+import time; import sys; import random; import threading; from threading import Event; import os
 
 threadDict = {}
 
@@ -10,7 +10,7 @@ class Module:
         pass
 
     def loadModule(self):
-        possibleMoves,roomInfo = station.getModuleInfo(self.currentModule,station.map)
+        possibleMoves,roomInfo = station.getModuleInfo(self.currentModule,str(station.map))
         station.outputModule(self.currentModule,roomInfo); station.outputMoves(possibleMoves)
         if station.fuel <= 100:
             print("LOW FUEL!")
@@ -86,7 +86,7 @@ class Module:
         return self.lastModule
 
     def getPossibleMoves(self):
-        return station.getModuleInfo(module,station.map)[0]
+        return station.getModuleInfo(self.currentModule,str(station.map))[0]
 
 
 
@@ -136,7 +136,7 @@ class Telium:
             movesToMake = random.randint(1,3)
             canMoveToLastModule = False
             while movesToMake > 0:
-                escapes,ignore = station.getModuleInfo(queen.queen,station.map)
+                escapes,ignore = station.getModuleInfo(str(queen.queen),str(station.map))
                 if localModule in escapes:
                     escapes.remove(localModule)
                 if localLastModule in escapes and canMoveToLastModule == False:
@@ -277,7 +277,7 @@ class Scanner:
         pass
 
     def scannerCalled(self):
-        print("SYSTEMATIC CAPTURE AND NETWORK NAVIGATION EGINE FOR RETRIEVAL (v6.1.12)")
+        print("SYSTEMATIC CAPTURE AND NETWORK NAVIGATION ENGINE FOR RETRIEVAL (v6.1.12)")
         print("loading...")
         time.sleep(3)
         print("SCANNER READY. ENTER COMMAND: (LOCK, POWER)")
@@ -315,20 +315,20 @@ class Station:
         done = False
         while done == False:
             try:
-                temp = open(f"resources/{map}/module{count}",mode="r")
+                temp = open(f"Telium (second version)/resources/{map}/module{str(count)}.txt",mode="r")
                 count += 1
                 temp.close()
             except FileNotFoundError:
                 done = True
         self.numModules = count
-        gameMapTemp = open(f"resources/{map}/map.txt","r")
+        gameMapTemp = open(f"Telium (second version)/resources/{map}/map.txt","r")
         self.gameMap = gameMapTemp.read()
         gameMapTemp.close()
 
-    def getModuleInfo(self,module,map):
+    def getModuleInfo(self,localModule,map):
         #retrieves information about a specific module
         moves = []
-        temp = open(f"resources/{map}/module{module}.txt","r")
+        temp = open(f"Telium (second version)/resources/{map}/module{str(localModule)}.txt","r")
         for i in range(0,4):
             moveRead = temp.readline()
             moveRead = int(moveRead.strip())
@@ -421,6 +421,8 @@ def mainMenu():
         else:
             print("Not a valid option. Please enter as an integer on its own, e.g. '1' to play the game.")
 
+mainMenu()
+
 module = Module()
 station = Station(map="Charles_Darwin") #change this so custom ones can be made
 scanner = Scanner()
@@ -429,6 +431,8 @@ workers = Worker()
 player = Player()
 panels = InfoPanel()
 queen = Telium()
+
+
 
 station.spawnNPCs() 
 
